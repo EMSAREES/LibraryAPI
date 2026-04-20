@@ -166,3 +166,12 @@ Este proyecto es de aprendizaje, pero puedes:
 ##  Licencia
 
 Uso libre para fines educativos.
+
+
+##  Orden de cada archivo o como lo hice yo porque ando aprendiendo
+Domain/
+├── Enums/          
+├── Common/         ← primero esto
+├── Exceptions/     ← luego esto
+├── ValueObjects/   ← luego esto
+└── Entities/       ← al final esto
