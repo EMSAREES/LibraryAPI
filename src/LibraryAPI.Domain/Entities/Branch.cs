@@ -1,4 +1,8 @@
-namespace LibraryAPI.Domain.Entities;
+using LibraryAPI.Domain.Enums;
+using LibraryAPI.Domain.Common;
+using LibraryAPI.Domain.Exceptions.Base;
+// using LibraryAPI.Domain.Events.Branches;
+using LibraryAPI.Domain.ValueObjects;
 
 public class Branch
 {

@@ -16,6 +16,11 @@ public class Role : BaseEntity
     // Constructor privado para EF Core
     private Role() { }
 
+    /// <summary>
+    /// Constructor privado que inicializa un rol con nombre y descripción.
+    /// Se usa únicamente desde el método de fábrica <see cref="Create"/> 
+    /// para garantizar que la instancia se cree con validaciones de negocio.
+    /// </summary>
     private Role(UserRole name, string description)
     {
         Name = name;
