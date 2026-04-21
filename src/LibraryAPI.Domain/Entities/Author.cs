@@ -1,6 +1,8 @@
+using LibraryAPI.Domain.Common;
+
 namespace LibraryAPI.Domain.Entities;
 
-public class Author 
+public class Author : BaseEntity
 {
     public Guid Id { get; private set; }
 
