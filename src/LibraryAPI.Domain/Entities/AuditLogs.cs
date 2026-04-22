@@ -1,6 +1,6 @@
 namespace LibraryAPI.Domain.Entities;
 
-public class Book
+public class AuditLogs
 {
-    
+   
 }
