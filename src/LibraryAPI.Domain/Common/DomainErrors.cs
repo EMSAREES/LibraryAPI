@@ -14,6 +14,7 @@ public static class DomainErrors
         public const string RequiredFieldNull   = "The required field cannot be null.";
         public const string InvalidGuid         = "The provided identifier is not valid.";
         public const string InvalidDateRange    = "The start date cannot be greater than the end date.";
+        public const string InvalidValue   = "El valor proporcionado no es válido.";
     }
 
     /// <summary>
