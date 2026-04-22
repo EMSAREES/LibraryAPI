@@ -1,6 +1,5 @@
 using LibraryAPI.Domain.Common;
 using LibraryAPI.Domain.Exceptions.Base;
-using LibraryAPI.Domain.Enums;
 using LibraryAPI.Domain.Events.Users;
 using LibraryAPI.Domain.Exceptions.Users;
 using LibraryAPI.Domain.ValueObjects;
@@ -29,6 +28,12 @@ public sealed class User : BaseEntity
     /// Hash de la contraseña. Nunca se almacena en texto plano.
     /// </summary>
     public string PasswordHash { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// Número de tarjeta asignado al cliente para identificarse en préstamos sin usar contraseña.
+    /// Solo aplica a usuarios tipo cliente.
+    /// </summary>
+    public LibraryCardNumber? LibraryCardNumber { get; private set; }
 
     /// <summary>
     /// Teléfono de contacto del usuario.
@@ -82,6 +87,7 @@ public sealed class User : BaseEntity
         PhoneNumber? phone,
         Guid roleId,
         Guid? branchId,
+        LibraryCardNumber? libraryCardNumber,
         Guid createdByUserId)
     {
         FullName = fullName;
@@ -90,6 +96,7 @@ public sealed class User : BaseEntity
         Phone = phone;
         RoleId = roleId;
         BranchId = branchId;
+        LibraryCardNumber = libraryCardNumber;
         IsActive = true;
         IsBlocked = false;
         CreatedByUserId = createdByUserId;
@@ -134,11 +141,65 @@ public sealed class User : BaseEntity
                 FieldName = nameof(RoleId)
             };
 
-        var user = new User(fullName, email, passwordHash, phone, roleId, branchId, createdByUserId);
+        var user = new User(fullName, email, passwordHash, phone, roleId, branchId, libraryCardNumber: null, createdByUserId);
 
         user.AddDomainEvent(new UserCreatedEvent(user));
 
         return user;
+    }
+
+    /// <summary>
+    /// Registra un nuevo cliente (sin contraseña) y le emite una tarjeta para identificarse en préstamos.
+    /// </summary>
+    public static User CreateClient(
+        FullName fullName,
+        Email email,
+        PhoneNumber? phone,
+        Guid roleId,
+        Guid createdByUserId)
+    {
+        if (fullName is null)
+            throw new DomainValidationException(DomainErrors.General.RequiredFieldNull)
+            {
+                FieldName = nameof(FullName)
+            };
+
+        if (email is null)
+            throw new DomainValidationException(DomainErrors.General.RequiredFieldNull)
+            {
+                FieldName = nameof(Email)
+            };
+
+        if (roleId == Guid.Empty)
+            throw new DomainValidationException(DomainErrors.Validation.ValueRequired)
+            {
+                FieldName = nameof(RoleId)
+            };
+
+        var cardNumber = LibraryAPI.Domain.ValueObjects.LibraryCardNumber.Generate();
+
+        var user = new User(
+            fullName,
+            email,
+            passwordHash: string.Empty,
+            phone,
+            roleId,
+            branchId: null,
+            libraryCardNumber: cardNumber,
+            createdByUserId);
+
+        user.AddDomainEvent(new UserCreatedEvent(user));
+        return user;
+    }
+
+    /// <summary>
+    /// Re-emite la tarjeta de biblioteca de un cliente (por pérdida/daño).
+    /// </summary>
+    public void ReissueLibraryCard()
+    {
+        LibraryCardNumber = LibraryAPI.Domain.ValueObjects.LibraryCardNumber.Generate();
+        MarkAsUpdated();
+        AddDomainEvent(new UserUpdatedEvent(this));
     }
 
     /// <summary>

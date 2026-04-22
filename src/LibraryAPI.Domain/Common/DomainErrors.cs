@@ -90,6 +90,7 @@ public static class DomainErrors
         public const string NotFound            = "The user was not found.";
         public const string AlreadyBlocked      = "The user is already blocked.";
         public const string NotBlocked          = "The user is not currently blocked.";
+        public const string LibraryCardRequired = "A library card is required for client users.";
     }
 
     /// <summary>

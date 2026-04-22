@@ -5,6 +5,7 @@ using LibraryAPI.Domain.Exceptions.Branches;
 using LibraryAPI.Domain.Events.Branches;
 using LibraryAPI.Domain.ValueObjects;
 
+namespace LibraryAPI.Domain.Entities;
 
 public class Branch : BaseEntity
 {
@@ -35,6 +36,7 @@ public class Branch : BaseEntity
     /// Constructor privado que inicializa una sucursal con nombre, dirección, teléfono, correo y usuario creador.
     /// Se usa únicamente desde el método de fábrica <see cref="Create"/> 
     /// para garantizar que la instancia se cree con todas las validaciones de negocio.
+    /// </summary>
     private Branch(
         string name,
         Address address,

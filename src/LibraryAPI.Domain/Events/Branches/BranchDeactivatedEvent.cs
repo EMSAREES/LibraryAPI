@@ -1,4 +1,5 @@
 using LibraryAPI.Domain.Common;
+using LibraryAPI.Domain.Entities;
 
 namespace LibraryAPI.Domain.Events.Branches;
 
