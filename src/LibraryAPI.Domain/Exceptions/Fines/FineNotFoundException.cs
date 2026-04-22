@@ -1,4 +1,5 @@
 using LibraryAPI.Domain.Exceptions.Base;
+using LibraryAPI.Domain.Common;
 
 namespace LibraryAPI.Domain.Exceptions.Fines;
 
@@ -11,7 +12,7 @@ public sealed class FineNotFoundException : DomainException
     public Guid FineId { get; }
 
     public FineNotFoundException(Guid fineId)
-        : base("FINE_NOT_FOUND", "La multa solicitada no fue encontrada.")
+        : base("FINE_NOT_FOUND", DomainErrors.Fine.FineNotFound)
     {
         FineId = fineId;
     }

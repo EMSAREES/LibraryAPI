@@ -1,4 +1,5 @@
 using LibraryAPI.Domain.Exceptions.Base;
+using LibraryAPI.Domain.Common;
 
 namespace LibraryAPI.Domain.Exceptions.Loans;
 
@@ -11,7 +12,7 @@ public sealed class LoanNotFoundException : DomainException
     public Guid LoanId { get; }
 
     public LoanNotFoundException(Guid loanId)
-        : base("LOAN_NOT_FOUND", "El préstamo solicitado no fue encontrado.")
+        : base("LOAN_NOT_FOUND", DomainErrors.Loan.LoanNotFound)
     {
         LoanId = loanId;
     }

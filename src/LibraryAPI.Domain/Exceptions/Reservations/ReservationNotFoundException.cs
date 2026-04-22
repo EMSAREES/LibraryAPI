@@ -1,4 +1,5 @@
 using LibraryAPI.Domain.Exceptions.Base;
+using LibraryAPI.Domain.Common;
 
 namespace LibraryAPI.Domain.Exceptions.Reservations;
 
@@ -11,7 +12,7 @@ public sealed class ReservationNotFoundException : DomainException
     public Guid ReservationId { get; }
 
     public ReservationNotFoundException(Guid reservationId)
-        : base("RESERVATION_NOT_FOUND", "La reserva solicitada no fue encontrada.")
+        : base("RESERVATION_NOT_FOUND", DomainErrors.Reservation.ReservationNotFound)
     {
         ReservationId = reservationId;
     }

@@ -9,5 +9,5 @@ namespace LibraryAPI.Domain.Exceptions.Users;
 public sealed class UserAlreadyActiveException : DomainException
 {
     public UserAlreadyActiveException()
-        : base("USER_ALREADY_ACTIVE", "El usuario ya se encuentra activo en el sistema.") { }
+        : base("USER_ALREADY_ACTIVE", Domain.Common.DomainErrors.User.AlreadyActive) { }
 }

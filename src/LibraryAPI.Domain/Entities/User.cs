@@ -4,6 +4,7 @@ using LibraryAPI.Domain.Events.Users;
 using LibraryAPI.Domain.Exceptions.Users;
 using LibraryAPI.Domain.ValueObjects;
 
+
 namespace LibraryAPI.Domain.Entities;
 
 /// <summary>
@@ -176,7 +177,7 @@ public sealed class User : BaseEntity
                 FieldName = nameof(RoleId)
             };
 
-        var cardNumber = LibraryAPI.Domain.ValueObjects.LibraryCardNumber.Generate();
+        var cardNumber = LibraryCardNumber.Generate();
 
         var user = new User(
             fullName,
@@ -197,7 +198,7 @@ public sealed class User : BaseEntity
     /// </summary>
     public void ReissueLibraryCard()
     {
-        LibraryCardNumber = LibraryAPI.Domain.ValueObjects.LibraryCardNumber.Generate();
+        LibraryCardNumber = LibraryCardNumber.Generate();
         MarkAsUpdated();
         AddDomainEvent(new UserUpdatedEvent(this));
     }
@@ -302,6 +303,6 @@ public sealed class User : BaseEntity
             throw new UserBlockedException();
 
         if (!IsActive)
-            throw new DomainValidationException(DomainErrors.User.NotFound);
+            throw new UserNotActiveException();
     }
 }

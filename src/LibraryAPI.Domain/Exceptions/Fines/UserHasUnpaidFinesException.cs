@@ -1,4 +1,5 @@
 using LibraryAPI.Domain.Exceptions.Base;
+using LibraryAPI.Domain.Common;
 
 namespace LibraryAPI.Domain.Exceptions.Fines;
 
@@ -15,7 +16,7 @@ public sealed class UserHasUnpaidFinesException : DomainException
     public decimal TotalUnpaid { get; }
 
     public UserHasUnpaidFinesException(decimal totalUnpaid)
-        : base("USER_HAS_UNPAID_FINES", "El usuario tiene multas pendientes y no puede realizar nuevas operaciones.")
+        : base("USER_HAS_UNPAID_FINES", DomainErrors.Fine.UserHasUnpaidFines)
     {
         TotalUnpaid = totalUnpaid;
     }

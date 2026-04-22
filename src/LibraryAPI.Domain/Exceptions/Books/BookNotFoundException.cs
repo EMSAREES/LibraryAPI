@@ -1,4 +1,5 @@
 using LibraryAPI.Domain.Exceptions.Base;
+using LibraryAPI.Domain.Common;
 
 namespace LibraryAPI.Domain.Exceptions.Books;
 
@@ -11,7 +12,7 @@ public sealed class BookNotFoundException : DomainException
     public Guid BookId { get; }
 
     public BookNotFoundException(Guid bookId)
-        : base("BOOK_NOT_FOUND", "El libro solicitado no fue encontrado en el catálogo.")
+        : base("BOOK_NOT_FOUND", DomainErrors.Book.BookNotFound)
     {
         BookId = bookId;
     }

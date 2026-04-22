@@ -37,6 +37,7 @@ public static class DomainErrors
         public const string BookNotAvailable    = "The book is not available at this branch.";
         public const string AlreadyReturned     = "This loan has already been closed as returned.";
         public const string CannotCancel        = "The loan cannot be canceled in its current state.";
+        public const string LoanNotFound        = "The requested loan was not found.";
         public const string CannotReturn        = "The loan cannot be marked as returned in its current state.";
     }
 
@@ -47,6 +48,8 @@ public static class DomainErrors
     {
         public const string AlreadyPaid         = "This fine has already been paid.";
         public const string InvalidAmount       = "The fine amount must be greater than zero.";
+        public const string FineNotFound        = "The requested fine was not found.";
+        public const string UserHasUnpaidFines  = "The user has outstanding fines and cannot perform new transactions.";
     }
 
     /// <summary>
@@ -58,6 +61,7 @@ public static class DomainErrors
         public const string CannotFulfill       = "The reservation cannot be fulfilled in its current state.";
         public const string CannotCancel        = "The reservation cannot be canceled in its current state.";
         public const string AlreadyExpired      = "The reservation has already expired and cannot be modified.";
+        public const string ReservationNotFound = "The requested reservation was not found.";
     }
     /// <summary>
     /// Errores relacionados con el inventario y stock de libros.
@@ -78,6 +82,7 @@ public static class DomainErrors
         public const string IsbnRequired       = "The book ISBN is required.";
         public const string MustHaveAuthor     = "The book must have at least one registered author.";
         public const string IsInactive         = "The book is inactive and cannot be operated.";
+        public const string BookNotFound       = "The requested book was not found.";
     }
 
     /// <summary>
@@ -91,6 +96,10 @@ public static class DomainErrors
         public const string AlreadyBlocked      = "The user is already blocked.";
         public const string NotBlocked          = "The user is not currently blocked.";
         public const string LibraryCardRequired = "A library card is required for client users.";
+        public const string NotActive           = "The user account is not active.";
+        public const string UserIsBlocked       = "The user is blocked and cannot perform this operation.";
+        public const string AlreadyActive       = "The user is already active in the system.";
+        
     }
 
     /// <summary>

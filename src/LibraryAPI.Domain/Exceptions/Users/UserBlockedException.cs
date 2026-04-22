@@ -11,5 +11,5 @@ namespace LibraryAPI.Domain.Exceptions.Users;
 public sealed class UserBlockedException : DomainException
 {
     public UserBlockedException()
-        : base("USER_BLOCKED", DomainErrors.User.AlreadyBlocked) { }
+        : base("USER_BLOCKED", DomainErrors.User.UserIsBlocked) { }
 }
