@@ -1,8 +1,10 @@
 using LibraryAPI.Domain.Enums;
 using LibraryAPI.Domain.Common;
 using LibraryAPI.Domain.Exceptions.Base;
+using LibraryAPI.Domain.Exceptions.Authors;
 
 using LibraryAPI.Domain.ValueObjects;
+using LibraryAPI.Domain.Events.Authors;
 
 namespace LibraryAPI.Domain.Entities;
 
@@ -50,8 +52,8 @@ public class Author : BaseEntity
     /// <summary>
     /// Crea un nuevo autor validando que tenga nombre completo.
     /// </summary>
-    /// <exception cref="DomainValidationException">
-    /// Se lanza si el nombre completo es nulo.
+    /// <exception cref="InvalidAuthorDataException">
+    /// Se lanza si el nombre completo es nulo o el ID de usuario es inválido.
     /// </exception>
     public static Author Create(
         FullName fullName,
@@ -61,18 +63,14 @@ public class Author : BaseEntity
         Guid createdByUserId)
     {
         if (fullName is null)
-            throw new DomainValidationException(DomainErrors.General.RequiredFieldNull)
-            {
-                FieldName = nameof(FullName)
-            };
+            throw new InvalidAuthorDataException(DomainErrors.General.RequiredFieldNull);
 
         if (createdByUserId == Guid.Empty)
-            throw new DomainValidationException(DomainErrors.Validation.ValueRequired)
-            {
-                FieldName = nameof(createdByUserId)
-            };
+            throw new InvalidAuthorDataException(DomainErrors.Validation.ValueRequired);
 
-        return new Author(fullName, nationality, birthDate, biography, createdByUserId);
+        var author = new Author(fullName, nationality, birthDate, biography, createdByUserId);
+        author.AddDomainEvent(new AuthorCreatedEvent(author));
+        return author;
     }
 
     /// <summary>
@@ -85,10 +83,7 @@ public class Author : BaseEntity
         string? biography)
     {
         if (fullName is null)
-            throw new DomainValidationException(DomainErrors.General.RequiredFieldNull)
-            {
-                FieldName = nameof(FullName)
-            };
+            throw new InvalidAuthorDataException(DomainErrors.General.RequiredFieldNull);
 
         FullName = fullName;
         Nationality = nationality;
@@ -96,5 +91,6 @@ public class Author : BaseEntity
         Biography = biography;
 
         MarkAsUpdated();
+        AddDomainEvent(new AuthorUpdatedEvent(this));
     }
 }

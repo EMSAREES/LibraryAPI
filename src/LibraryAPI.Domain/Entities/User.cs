@@ -229,7 +229,7 @@ public sealed class User : BaseEntity
     public void Unblock()
     {
         if (!IsBlocked)
-            throw new DomainValidationException(DomainErrors.User.NotBlocked);
+            throw new UserNotBlockedException();
 
         IsBlocked = false;
 

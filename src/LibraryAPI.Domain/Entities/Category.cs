@@ -1,5 +1,7 @@
 using LibraryAPI.Domain.Common;
 using LibraryAPI.Domain.Exceptions.Base;
+using LibraryAPI.Domain.Exceptions.Categories;
+using LibraryAPI.Domain.Events.Categories;
 
 namespace LibraryAPI.Domain.Entities;
 
@@ -29,24 +31,20 @@ public class Category : BaseEntity
     /// <summary>
     /// Crea una nueva categoría validando que el nombre no esté vacío.
     /// </summary>
-    /// <exception cref="DomainValidationException">
-    /// Se lanza si el nombre es nulo o vacío.
+    /// <exception cref="InvalidCategoryDataException">
+    /// Se lanza si el nombre es nulo, vacío o excede el largo máximo.
     /// </exception>
     public static Category Create(string name, string? description = null)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new DomainValidationException(DomainErrors.Validation.ValueRequired)
-            {
-                FieldName = nameof(Name)
-            };
+            throw new InvalidCategoryDataException(DomainErrors.Validation.ValueRequired);
 
         if (name.Trim().Length > 100)
-            throw new DomainValidationException(DomainErrors.Validation.StringTooLong)
-            {
-                FieldName = nameof(Name)
-            };
+            throw new InvalidCategoryDataException(DomainErrors.Validation.StringTooLong);
 
-        return new Category(name.Trim(), description?.Trim());
+        var category = new Category(name.Trim(), description?.Trim());
+        category.AddDomainEvent(new CategoryCreatedEvent(category));
+        return category;
     }
 
     /// <summary>
@@ -55,14 +53,12 @@ public class Category : BaseEntity
     public void Update(string name, string? description)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new DomainValidationException(DomainErrors.Validation.ValueRequired)
-            {
-                FieldName = nameof(Name)
-            };
+            throw new InvalidCategoryDataException(DomainErrors.Validation.ValueRequired);
 
         Name = name.Trim();
         Description = description?.Trim();
 
         MarkAsUpdated();
+        AddDomainEvent(new CategoryUpdatedEvent(this));
     }
 }

@@ -1,4 +1,5 @@
 using LibraryAPI.Domain.Exceptions.Base;
+using LibraryAPI.Domain.Common;
 
 namespace LibraryAPI.Domain.Exceptions.Users;
 
@@ -9,5 +10,5 @@ namespace LibraryAPI.Domain.Exceptions.Users;
 public sealed class UserAlreadyActiveException : DomainException
 {
     public UserAlreadyActiveException()
-        : base("USER_ALREADY_ACTIVE", Domain.Common.DomainErrors.User.AlreadyActive) { }
+        : base("USER_ALREADY_ACTIVE", DomainErrors.User.AlreadyActive) { }
 }

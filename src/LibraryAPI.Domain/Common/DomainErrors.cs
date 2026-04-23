@@ -14,7 +14,7 @@ public static class DomainErrors
         public const string RequiredFieldNull   = "The required field cannot be null.";
         public const string InvalidGuid         = "The provided identifier is not valid.";
         public const string InvalidDateRange    = "The start date cannot be greater than the end date.";
-        public const string InvalidValue   = "El valor proporcionado no es válido.";
+        public const string InvalidValue   = "The provided value is not valid.";
     }
 
     /// <summary>
@@ -109,6 +109,38 @@ public static class DomainErrors
     {
         public const string NotFound            = "The branch was not found.";
         public const string IsInactive          = "The branch is inactive and cannot process loans.";
+    }
+
+    /// <summary>
+    /// Errores relacionados con autores.
+    /// </summary>
+    public static class Author
+    {
+        public const string AuthorNotFound      = "The requested author was not found.";
+        public const string AuthorAlreadyExists = "An author with this name already exists in the system.";
+        public const string InvalidAuthorData   = "The author data provided is not valid.";
+    }
+
+    /// <summary>
+    /// Errores relacionados con categorías.
+    /// </summary>
+    public static class Category
+    {
+        public const string CategoryNotFound    = "The requested category was not found.";
+        public const string CategoryAlreadyExists = "A category with this name already exists in the system.";
+        public const string CategoryInUse       = "The category cannot be deleted because it has associated books.";
+        public const string InvalidCategoryData = "The category data provided is not valid.";
+    }
+
+    /// <summary>
+    /// Errores relacionados con configuraciones globales.
+    /// </summary>
+    public static class GlobalSetting
+    {
+        public const string SettingNotFound     = "The requested global setting was not found.";
+        public const string InvalidSettingKey   = "The provided setting key is not valid.";
+        public const string SettingAlreadyExists = "A setting with this key already exists in the system.";
+        public const string InvalidSettingValue = "The setting value provided is not valid for this configuration key.";
     }
     
 }

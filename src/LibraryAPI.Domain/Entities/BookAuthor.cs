@@ -1,6 +1,7 @@
 using LibraryAPI.Domain.Enums;
 using LibraryAPI.Domain.Common;
 using LibraryAPI.Domain.Exceptions.Base;
+using LibraryAPI.Domain.Events.Books;
 
 
 namespace LibraryAPI.Domain.Entities;
@@ -68,6 +69,8 @@ public sealed class BookAuthor : BaseEntity
                 FieldName = nameof(AuthorId)
             };
 
-        return new BookAuthor(bookId, authorId, role);
+        var bookAuthor = new BookAuthor(bookId, authorId, role);
+        bookAuthor.AddDomainEvent(new BookAuthorCreatedEvent(bookAuthor));
+        return bookAuthor;
     }
 }

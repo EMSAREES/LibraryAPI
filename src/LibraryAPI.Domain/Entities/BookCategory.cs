@@ -1,6 +1,7 @@
 using LibraryAPI.Domain.Enums;
 using LibraryAPI.Domain.Common;
 using LibraryAPI.Domain.Exceptions.Base;
+using LibraryAPI.Domain.Events.Books;
 
 namespace LibraryAPI.Domain.Entities;
 
@@ -60,6 +61,8 @@ public sealed class BookCategory : BaseEntity
                 FieldName = nameof(CategoryId)
             };
 
-        return new BookCategory(bookId, categoryId);
+        var bookCategory = new BookCategory(bookId, categoryId);
+        bookCategory.AddDomainEvent(new BookCategoryCreatedEvent(bookCategory));
+        return bookCategory;
     }
 }
