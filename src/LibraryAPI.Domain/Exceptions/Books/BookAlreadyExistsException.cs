@@ -12,7 +12,7 @@ public sealed class BookAlreadyExistsException : DomainException
     public string Isbn { get; }
 
     public BookAlreadyExistsException(string isbn)
-        : base("BOOK_ALREADY_EXISTS", $"Ya existe un libro registrado con el ISBN {isbn}.")
+        : base("BOOK_ALREADY_EXISTS", $"There is already a book registered with the ISBN {isbn}.")
     {
         Isbn = isbn;
     }
