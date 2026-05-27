@@ -4,9 +4,11 @@ using LibraryAPI.Domain.Common;
 namespace LibraryAPI.Domain.Exceptions.Loans;
 
 /// <summary>
-/// Se lanza cuando se intenta registrar la devolución de un préstamo
-/// que no está en estado Active u Overdue.
-/// HTTP → 409 Conflict.
+/// Se lanza cuando un usuario bloqueado intenta crear un préstamo.
+/// HTTP → 403 Forbidden.
+/// NOTA: Diferente de UserBlockedException (en Users/) — esta pertenece
+/// al contexto de Loans para señalar explícitamente que el bloqueo
+/// impide la operación de préstamo.
 /// </summary>
 public sealed class UserIsBlockedException : DomainException
 {
