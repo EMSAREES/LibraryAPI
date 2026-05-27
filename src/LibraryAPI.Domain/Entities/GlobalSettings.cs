@@ -21,16 +21,20 @@ public sealed class GlobalSetting : BaseEntity
         Value = value;
         Description = description;
         UpdatedByUserId = updatedByUserId;
-
         CreatedByUserId = updatedByUserId;
     }
 
     public static GlobalSetting Create(GlobalSettingKey key, string value, string? description, Guid createdByUserId)
     {
-        if (string.IsNullOrWhiteSpace(value))
-            throw new InvalidSettingValueException(key, value);
-
+        // CORREGIDO: lanzar DomainValidationException cuando el userId es inválido,
+        // no InvalidSettingValueException (el error no tiene que ver con el valor de la configuración).
         if (createdByUserId == Guid.Empty)
+            throw new DomainValidationException(DomainErrors.Validation.ValueRequired)
+            {
+                FieldName = nameof(createdByUserId)
+            };
+
+        if (string.IsNullOrWhiteSpace(value))
             throw new InvalidSettingValueException(key, value);
 
         var setting = new GlobalSetting(key, value, description, createdByUserId);
@@ -40,10 +44,14 @@ public sealed class GlobalSetting : BaseEntity
 
     public void Update(string value, string? description, Guid updatedByUserId)
     {
-        if (string.IsNullOrWhiteSpace(value))
-            throw new InvalidSettingValueException(Key, value);
-
+        // CORREGIDO: misma corrección que en Create.
         if (updatedByUserId == Guid.Empty)
+            throw new DomainValidationException(DomainErrors.Validation.ValueRequired)
+            {
+                FieldName = nameof(updatedByUserId)
+            };
+
+        if (string.IsNullOrWhiteSpace(value))
             throw new InvalidSettingValueException(Key, value);
 
         Value = value;
