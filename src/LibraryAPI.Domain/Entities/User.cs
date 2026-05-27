@@ -9,76 +9,26 @@ namespace LibraryAPI.Domain.Entities;
 
 /// <summary>
 /// Representa a un usuario del sistema de biblioteca.
-/// Gestiona su propio ciclo de vida: registro, bloqueo, desbloqueo
-/// y actualización de perfil.
+/// Gestiona su propio ciclo de vida: registro, bloqueo, desbloqueo,
+/// activación, desactivación y actualización de perfil.
 /// Un usuario bloqueado no puede crear préstamos ni reservas.
 /// </summary>
 public sealed class User : BaseEntity
 {
-    /// <summary>
-    /// Nombre completo del usuario.
-    /// </summary>
     public FullName FullName { get; private set; } = null!;
-
-    /// <summary>
-    /// Correo electrónico único del usuario. Se usa como login.
-    /// </summary>
     public Email Email { get; private set; } = null!;
-
-    /// <summary>
-    /// Hash de la contraseña. Nunca se almacena en texto plano.
-    /// </summary>
     public string PasswordHash { get; private set; } = string.Empty;
-
-    /// <summary>
-    /// Número de tarjeta asignado al cliente para identificarse en préstamos sin usar contraseña.
-    /// Solo aplica a usuarios tipo cliente.
-    /// </summary>
     public LibraryCardNumber? LibraryCardNumber { get; private set; }
-
-    /// <summary>
-    /// Teléfono de contacto del usuario.
-    /// </summary>
     public PhoneNumber? Phone { get; private set; }
-
-    /// <summary>
-    /// Indica si la cuenta está activa en el sistema.
-    /// </summary>
     public bool IsActive { get; private set; }
-
-    /// <summary>
-    /// Indica si el usuario está bloqueado por multas pendientes.
-    /// Un usuario bloqueado no puede solicitar préstamos ni reservas.
-    /// </summary>
     public bool IsBlocked { get; private set; }
-
-    /// <summary>
-    /// Identificador del rol asignado al usuario.
-    /// </summary>
     public Guid RoleId { get; private set; }
-
-    /// <summary>
-    /// Identificador de la sucursal a la que está asignado (solo empleados).
-    /// Nulo para clientes.
-    /// </summary>
     public Guid? BranchId { get; private set; }
 
-    /// <summary>
-    /// Préstamos realizados por este usuario.
-    /// </summary>
     public IReadOnlyList<Loan> Loans { get; private set; } = [];
-
-    /// <summary>
-    /// Reservas activas del usuario.
-    /// </summary>
     public IReadOnlyList<Reservation> Reservations { get; private set; } = [];
-
-    /// <summary>
-    /// Multas pendientes o historial de multas del usuario.
-    /// </summary>
     public IReadOnlyList<Fine> Fines { get; private set; } = [];
 
-    // Constructor privado para EF Core
     private User() { }
 
     private User(
@@ -103,12 +53,6 @@ public sealed class User : BaseEntity
         CreatedByUserId = createdByUserId;
     }
 
-    /// <summary>
-    /// Registra un nuevo usuario en el sistema y publica el evento de creación.
-    /// </summary>
-    /// <exception cref="DomainValidationException">
-    /// Se lanza si algún campo obligatorio es nulo o inválido.
-    /// </exception>
     public static User Create(
         FullName fullName,
         Email email,
@@ -120,32 +64,22 @@ public sealed class User : BaseEntity
     {
         if (fullName is null)
             throw new DomainValidationException(DomainErrors.General.RequiredFieldNull)
-            {
-                FieldName = nameof(FullName)
-            };
+            { FieldName = nameof(FullName) };
 
         if (email is null)
             throw new DomainValidationException(DomainErrors.General.RequiredFieldNull)
-            {
-                FieldName = nameof(Email)
-            };
+            { FieldName = nameof(Email) };
 
         if (string.IsNullOrWhiteSpace(passwordHash))
             throw new DomainValidationException(DomainErrors.Validation.ValueRequired)
-            {
-                FieldName = nameof(PasswordHash)
-            };
+            { FieldName = nameof(PasswordHash) };
 
         if (roleId == Guid.Empty)
             throw new DomainValidationException(DomainErrors.Validation.ValueRequired)
-            {
-                FieldName = nameof(RoleId)
-            };
+            { FieldName = nameof(RoleId) };
 
         var user = new User(fullName, email, passwordHash, phone, roleId, branchId, libraryCardNumber: null, createdByUserId);
-
         user.AddDomainEvent(new UserCreatedEvent(user));
-
         return user;
     }
 
@@ -161,44 +95,53 @@ public sealed class User : BaseEntity
     {
         if (fullName is null)
             throw new DomainValidationException(DomainErrors.General.RequiredFieldNull)
-            {
-                FieldName = nameof(FullName)
-            };
+            { FieldName = nameof(FullName) };
 
         if (email is null)
             throw new DomainValidationException(DomainErrors.General.RequiredFieldNull)
-            {
-                FieldName = nameof(Email)
-            };
+            { FieldName = nameof(Email) };
 
         if (roleId == Guid.Empty)
             throw new DomainValidationException(DomainErrors.Validation.ValueRequired)
-            {
-                FieldName = nameof(RoleId)
-            };
+            { FieldName = nameof(RoleId) };
 
-        var cardNumber = LibraryCardNumber.Generate();
-
-        var user = new User(
-            fullName,
-            email,
-            passwordHash: string.Empty,
-            phone,
-            roleId,
-            branchId: null,
-            libraryCardNumber: cardNumber,
-            createdByUserId);
-
+        var cardNumber = ValueObjects.LibraryCardNumber.Generate();
+        var user = new User(fullName, email, passwordHash: string.Empty, phone, roleId, branchId: null, libraryCardNumber: cardNumber, createdByUserId);
         user.AddDomainEvent(new UserCreatedEvent(user));
         return user;
     }
 
     /// <summary>
-    /// Re-emite la tarjeta de biblioteca de un cliente (por pérdida/daño).
+    /// Activa una cuenta de usuario previamente desactivada.
     /// </summary>
-    public void ReissueLibraryCard()
+    /// <exception cref="UserAlreadyActiveException">
+    /// Se lanza si el usuario ya estaba activo.
+    /// </exception>
+    public void Activate()
     {
-        LibraryCardNumber = LibraryCardNumber.Generate();
+        if (IsActive)
+            throw new UserAlreadyActiveException();
+
+        IsActive = true;
+
+        MarkAsUpdated();
+        AddDomainEvent(new UserUpdatedEvent(this));
+    }
+
+    /// <summary>
+    /// Desactiva la cuenta de usuario. Una cuenta inactiva no puede
+    /// autenticarse ni realizar préstamos o reservas.
+    /// </summary>
+    /// <exception cref="UserNotActiveException">
+    /// Se lanza si el usuario ya estaba inactivo.
+    /// </exception>
+    public void Deactivate()
+    {
+        if (!IsActive)
+            throw new UserNotActiveException();
+
+        IsActive = false;
+
         MarkAsUpdated();
         AddDomainEvent(new UserUpdatedEvent(this));
     }
@@ -206,9 +149,6 @@ public sealed class User : BaseEntity
     /// <summary>
     /// Bloquea al usuario por multas pendientes o acción administrativa.
     /// </summary>
-    /// <exception cref="UserAlreadyBlockedException">
-    /// Se lanza si el usuario ya estaba bloqueado.
-    /// </exception>
     public void Block()
     {
         if (IsBlocked)
@@ -223,9 +163,6 @@ public sealed class User : BaseEntity
     /// <summary>
     /// Desbloquea al usuario después de saldar sus multas pendientes.
     /// </summary>
-    /// <exception cref="DomainValidationException">
-    /// Se lanza si el usuario no estaba bloqueado.
-    /// </exception>
     public void Unblock()
     {
         if (!IsBlocked)
@@ -238,15 +175,23 @@ public sealed class User : BaseEntity
     }
 
     /// <summary>
+    /// Re-emite la tarjeta de biblioteca de un cliente (por pérdida o daño).
+    /// </summary>
+    public void ReissueLibraryCard()
+    {
+        LibraryCardNumber = ValueObjects.LibraryCardNumber.Generate();
+        MarkAsUpdated();
+        AddDomainEvent(new UserUpdatedEvent(this));
+    }
+
+    /// <summary>
     /// Actualiza el perfil del usuario.
     /// </summary>
     public void UpdateProfile(FullName fullName, PhoneNumber? phone)
     {
         if (fullName is null)
             throw new DomainValidationException(DomainErrors.General.RequiredFieldNull)
-            {
-                FieldName = nameof(FullName)
-            };
+            { FieldName = nameof(FullName) };
 
         FullName = fullName;
         Phone = phone;
@@ -258,19 +203,13 @@ public sealed class User : BaseEntity
     /// <summary>
     /// Actualiza el hash de la contraseña del usuario.
     /// </summary>
-    /// <exception cref="DomainValidationException">
-    /// Se lanza si el nuevo hash está vacío.
-    /// </exception>
     public void UpdatePassword(string newPasswordHash)
     {
         if (string.IsNullOrWhiteSpace(newPasswordHash))
             throw new DomainValidationException(DomainErrors.Validation.ValueRequired)
-            {
-                FieldName = nameof(PasswordHash)
-            };
+            { FieldName = nameof(PasswordHash) };
 
         PasswordHash = newPasswordHash;
-
         MarkAsUpdated();
     }
 
@@ -281,12 +220,9 @@ public sealed class User : BaseEntity
     {
         if (branchId == Guid.Empty)
             throw new DomainValidationException(DomainErrors.Validation.ValueRequired)
-            {
-                FieldName = nameof(BranchId)
-            };
+            { FieldName = nameof(BranchId) };
 
         BranchId = branchId;
-
         MarkAsUpdated();
     }
 
@@ -294,15 +230,12 @@ public sealed class User : BaseEntity
     /// Verifica que el usuario pueda realizar préstamos o reservas.
     /// Lanza excepción si está bloqueado o inactivo.
     /// </summary>
-    /// <exception cref="UserBlockedException">
-    /// Se lanza si el usuario está bloqueado.
-    /// </exception>
     public void EnsureCanBorrow()
     {
-        if (IsBlocked)
-            throw new UserBlockedException();
-
         if (!IsActive)
             throw new UserNotActiveException();
+
+        if (IsBlocked)
+            throw new UserBlockedException();
     }
 }
