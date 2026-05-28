@@ -16,10 +16,10 @@ namespace LibraryAPI.Domain.Entities;
 public sealed class User : BaseEntity
 {
     public FullName FullName { get; private set; } = null!;
-    public Email Email { get; private set; } = null!;
+    public Email? Email { get; private set; }
     public string PasswordHash { get; private set; } = string.Empty;
     public LibraryCardNumber? LibraryCardNumber { get; private set; }
-    public PhoneNumber? Phone { get; private set; }
+    public PhoneNumber Phone { get; private set; } = null!;
     public bool IsActive { get; private set; }
     public bool IsBlocked { get; private set; }
     public Guid RoleId { get; private set; }
@@ -33,9 +33,9 @@ public sealed class User : BaseEntity
 
     private User(
         FullName fullName,
-        Email email,
+        Email? email,
         string passwordHash,
-        PhoneNumber? phone,
+        PhoneNumber phone,
         Guid roleId,
         Guid? branchId,
         LibraryCardNumber? libraryCardNumber,
@@ -55,9 +55,9 @@ public sealed class User : BaseEntity
 
     public static User Create(
         FullName fullName,
-        Email email,
+        Email? email,
         string passwordHash,
-        PhoneNumber? phone,
+        PhoneNumber phone,
         Guid roleId,
         Guid? branchId,
         Guid createdByUserId)
@@ -66,9 +66,11 @@ public sealed class User : BaseEntity
             throw new DomainValidationException(DomainErrors.General.RequiredFieldNull)
             { FieldName = nameof(FullName) };
 
-        if (email is null)
+        // Ya NO validas email
+
+        if (phone is null)
             throw new DomainValidationException(DomainErrors.General.RequiredFieldNull)
-            { FieldName = nameof(Email) };
+            { FieldName = nameof(Phone) };
 
         if (string.IsNullOrWhiteSpace(passwordHash))
             throw new DomainValidationException(DomainErrors.Validation.ValueRequired)
@@ -78,8 +80,18 @@ public sealed class User : BaseEntity
             throw new DomainValidationException(DomainErrors.Validation.ValueRequired)
             { FieldName = nameof(RoleId) };
 
-        var user = new User(fullName, email, passwordHash, phone, roleId, branchId, libraryCardNumber: null, createdByUserId);
+        var user = new User(
+            fullName,
+            email,
+            passwordHash,
+            phone,
+            roleId,
+            branchId,
+            libraryCardNumber: null,
+            createdByUserId);
+
         user.AddDomainEvent(new UserCreatedEvent(user));
+
         return user;
     }
 
@@ -88,8 +100,8 @@ public sealed class User : BaseEntity
     /// </summary>
     public static User CreateClient(
         FullName fullName,
-        Email email,
-        PhoneNumber? phone,
+        Email? email,
+        PhoneNumber phone,
         Guid roleId,
         Guid createdByUserId)
     {
@@ -97,17 +109,28 @@ public sealed class User : BaseEntity
             throw new DomainValidationException(DomainErrors.General.RequiredFieldNull)
             { FieldName = nameof(FullName) };
 
-        if (email is null)
+        if (phone is null)
             throw new DomainValidationException(DomainErrors.General.RequiredFieldNull)
-            { FieldName = nameof(Email) };
+            { FieldName = nameof(Phone) };
 
         if (roleId == Guid.Empty)
             throw new DomainValidationException(DomainErrors.Validation.ValueRequired)
             { FieldName = nameof(RoleId) };
 
-        var cardNumber = ValueObjects.LibraryCardNumber.Generate();
-        var user = new User(fullName, email, passwordHash: string.Empty, phone, roleId, branchId: null, libraryCardNumber: cardNumber, createdByUserId);
+        var cardNumber = LibraryCardNumber.Generate();
+
+        var user = new User(
+            fullName,
+            email,
+            passwordHash: string.Empty,
+            phone,
+            roleId,
+            branchId: null,
+            libraryCardNumber: cardNumber,
+            createdByUserId);
+
         user.AddDomainEvent(new UserCreatedEvent(user));
+
         return user;
     }
 
@@ -187,11 +210,15 @@ public sealed class User : BaseEntity
     /// <summary>
     /// Actualiza el perfil del usuario.
     /// </summary>
-    public void UpdateProfile(FullName fullName, PhoneNumber? phone)
+    public void UpdateProfile(FullName fullName, PhoneNumber phone)
     {
         if (fullName is null)
             throw new DomainValidationException(DomainErrors.General.RequiredFieldNull)
             { FieldName = nameof(FullName) };
+
+        if (phone is null)
+            throw new DomainValidationException(DomainErrors.General.RequiredFieldNull)
+            { FieldName = nameof(Phone) };
 
         FullName = fullName;
         Phone = phone;
