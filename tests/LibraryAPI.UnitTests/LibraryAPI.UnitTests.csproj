@@ -15,7 +15,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\LibraryAPI.Domain\LibraryAPI.Domain.csproj" />
+  </ItemGroup>
+
+
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 
 </Project>
+
