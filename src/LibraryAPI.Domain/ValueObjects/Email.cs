@@ -1,5 +1,7 @@
 using LibraryAPI.Domain.Exceptions.Base;
 using LibraryAPI.Domain.Common;
+using System.Net.Mail;
+using System.Text.RegularExpressions;
 
 namespace LibraryAPI.Domain.ValueObjects;
 
@@ -16,6 +18,10 @@ public sealed class Email : IEquatable<Email>
     public string Value { get; }
 
     private Email(string value) => Value = value;
+    
+
+    // Regex ultra rápido para asegurar que el bloque del dominio tenga al menos un punto intermedio
+    private static readonly Regex DomainDotRegex = new(@"@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled);
 
     /// <summary>
     /// Crea una instancia de Email validando formato antes de retornar.
@@ -25,28 +31,45 @@ public sealed class Email : IEquatable<Email>
     /// </exception>
     public static Email Create(string value)
     {
+        // 1. Validar nulidad o vacío primero
         if (string.IsNullOrWhiteSpace(value))
             throw new DomainValidationException(DomainErrors.Validation.ValueRequired)
             {
                 FieldName = nameof(Email)
             };
 
-        var normalized = value.Trim().ToLowerInvariant();
-
-        if (!normalized.Contains('@') || normalized.IndexOf('.', normalized.IndexOf('@')) < 0)
-            throw new DomainValidationException("El formato del correo electrónico no es válido.")
-            {
-                FieldName = nameof(Email)
-            };
-
-        if (normalized.Length > 200)
+        // 2. Validar longitud antes de normalizar (Protección contra strings masivos en memoria)
+        if (value.Length > 200)
             throw new DomainValidationException(DomainErrors.Validation.StringTooLong)
             {
                 FieldName = nameof(Email)
             };
 
+        var normalized = value.Trim().ToLowerInvariant(); // eliminamos los espasio en blanco
+
+        // 3. Validación robusta de formato usando la librería nativa de .NET
+        try
+        {
+            // Intenta parsear el correo. Si falla, saltará al bloque catch.
+            _ = new MailAddress(normalized);
+
+             //  Fuerza que el dominio contenga un punto obligatorio (Ej: evitamos "missing@dot")
+            if (!DomainDotRegex.IsMatch(normalized))
+            {
+                throw new FormatException();
+            }
+        }
+        catch (FormatException)
+        {
+            throw new DomainValidationException("El formato del correo electrónico no es válido.")
+            {
+                FieldName = nameof(Email)
+            };
+        }
+
         return new Email(normalized);
     }
+
 
     /// <summary>
     /// Compara esta instancia de Email con otra, verificando que no sea nula
